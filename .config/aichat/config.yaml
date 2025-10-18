@@ -3,4 +3,9 @@ clients:
 - type: openai-compatible
   name: groq
   api_base: https://api.groq.com/openai/v1
-  api_key: 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
+  api_key: 
+
+model: gemini:gemini-2.0-flash
+clients:
+- type: gemini
+  api_key: 
