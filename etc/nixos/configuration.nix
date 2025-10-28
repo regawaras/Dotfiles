@@ -30,8 +30,6 @@
   #"acpi_osi=Linux"
   ];
 
-
-
   #boot.extraModprobeConfig = ''
   #  options nvidia NVreg_OpenRmEnableUnsupportedGpus=1
   #'';
@@ -68,7 +66,11 @@ nix = {
   };
 
   # === Display Server & Desktop ===
-  services.xserver.enable = false;
+  services.xserver = {
+    enable = false;
+    videoDrivers = [ "nvidia" "intel" ];
+  };
+
   services.displayManager.sddm = {
     enable = false;
     wayland.enable = true;
@@ -76,7 +78,7 @@ nix = {
   services.displayManager.defaultSession = "hyprland";
   services.desktopManager.plasma6.enable = true;
   services.getty.autologinUser = "regawaras";
-
+  
   services.xserver.xkb = {
     layout = "us";
     variant = "";
@@ -108,7 +110,6 @@ nix = {
     };
   };
 
-  services.xserver.videoDrivers = [ "nvidia" ];
   nixpkgs.config.cudaSupport = true;
   nixpkgs.config.allowUnfree = true;
 
@@ -116,7 +117,7 @@ nix = {
   users.users.regawaras = {
     isNormalUser = true;
     description = "regawaras";
-    extraGroups = [ "networkmanager" "wheel" "video" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "adbusers" "docker" ];
     shell = pkgs.bash;
   };
 
@@ -131,46 +132,79 @@ nix = {
     }
   ];
 
+  #virtualisation.docker = {
+  #  enable = true;
+  #  enableNvidia = true;
+  #  enableOnBoot = true;
+  #  package = pkgs.docker_25;
+  #};
+
+  hardware.nvidia-container-toolkit.enable = true;
 
   # === Packages ===
   environment.systemPackages = with pkgs; [
-    pkgs.ly
+    # Qt5 packages
+    #qt5.qtbase
+    #qt5.qtdeclarative
+    #qt5.qtwebsockets
+    #qt5.qtwebchannel
+    #qt5.qtmultimedia
+    #qt5.qtwebengine
+
+    # Qt6 packages
+    #qt6.qtbase
+    #qt6.qtdeclarative
+    #qt6.qtwebsockets
+    #qt6.qtwebchannel
+    #qt6.qtmultimedia
+    #qt6.qtwebengine   
+
+    #pkgs.ly
     vim
-    emacs
-    neovim
-    wget
+    #emacs
+    #neovim
+    #zed-editor
+    #wget
     git
     efibootmgr
     aichat
     htop
     nvtopPackages.nvidia
-    neofetch
+    mpv
+    #neofetch
     fastfetch
     jp2a
     cava
     brightnessctl
     cmatrix
-    nmap
-    sqlmap
-    wireshark
-    exiftool
+    #nmap
+    #whois
+    #sqlmap
+    #wireshark
+    #exiftool
+    grim
+    #slurp
 
     #pkgs.cudaPackages_11_8
     #pip
-
+    #lynx
 
     obsidian
     krita
-    blender
+    #blender
     brave
-    davinci-resolve
+    #davinci-resolve
     ntfs3g
-    steam
-    steam-run
-    discord
+    #steam
+    #steam-run
+    #discord
+    pkgs.tty-clock
+    #docker
     
 
     networkmanagerapplet
+    qt5.qtwayland
+    qt6.qtwayland
     kitty
     waybar
     wofi
@@ -179,13 +213,22 @@ nix = {
     nwg-look
 
     kdePackages.polkit-kde-agent-1
+    #kdePackages.kdenlive
+    kdePackages.partitionmanager
 
-    grim
-    mpd
+    #mpd
+    #dunst
+    #spotify
 
+    pkgs.cudatoolkit
+    #pkgs.cudaPackages.cuda_11_8.cudatoolkit
+    cudaPackages.cudnn
+    mesa-demos # Menyediakan glxinfo
+    vulkan-tools # Menyediakan vulkaninfo untuk Vulkan
+    clinfo
     nvidia-vaapi-driver
-    scrcpy
-    android-tools
+    #scrcpy
+    #android-tools
   ];
 
 fonts.packages = with pkgs; [
@@ -212,19 +255,20 @@ fonts.packages = with pkgs; [
   };
 
   # === Applications ===
+  programs.adb.enable = true;
+  programs.kdeconnect.enable = true;
   programs.firefox = {
     enable = true;
     package = pkgs.firefox-bin;
   };
   programs.steam.enable = true;
   programs.obs-studio.enable = true;
-  programs.zsh.enable = true;
+  #programs.zsh.enable = true;
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = with pkgs; [
     zlib
     stdenv.cc.cc.lib
-  ];
-
+ ];
 
   # === Hyprland ===
   programs.hyprland = {
@@ -234,7 +278,7 @@ fonts.packages = with pkgs; [
 
   # === Random Services ===
   services.resolved.enable = true; #for DNS
-  services.printing.enable = true;
+  #services.printing.enable = true;
   services.upower.enable = true;
   services.fwupd.enable = true;
   services.gnome.gnome-keyring.enable = true;
@@ -244,6 +288,10 @@ fonts.packages = with pkgs; [
   security.polkit.enable = true;
   services.udisks2.enable = true;
 
+  services.openssh = {
+    enable = true;
+    settings.PermitRootLogin = "no";
+  };
 
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
@@ -252,11 +300,13 @@ fonts.packages = with pkgs; [
   services.dbus.enable = true;
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-wlr ];
+    extraPortals = with pkgs; [ 
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-hyprland
+    ];
     xdgOpenUsePortal = true;
-    config.common.default = "*";
+    config.common.default = "hyprland";
   };
-
 
   system.stateVersion = "25.05";
 }
