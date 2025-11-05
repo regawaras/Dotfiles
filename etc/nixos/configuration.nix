@@ -168,6 +168,7 @@ nix = {
     git
     gemini-cli
     efibootmgr
+    ffmpeg
     aichat
     htop
     nvtopPackages.nvidia
