@@ -166,6 +166,7 @@ nix = {
     #zed-editor
     #wget
     git
+    gemini-cli
     efibootmgr
     aichat
     htop
